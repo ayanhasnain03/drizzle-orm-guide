@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createPost, getPostsByUserId } from "../services/post.service";
+import { createPost, getAllPosts, getPostsByUserId } from "../services/post.service";
 
 
 export const createPostController = async (req: Request, res: Response): Promise<void> => {
@@ -29,4 +29,13 @@ export const getUserPostController = async (req:Request,res:Response):Promise<vo
  } catch (error) {
 
  }
+}
+export const getAllPostsControllers = async (req: Request, res: Response): Promise<void> => {
+  const { page, limit=1 } = req.query;
+  try {
+    const result = await getAllPosts(page as any,limit as any);
+    res.status(200).json({ posts:result });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch posts" });
+  }
 }
