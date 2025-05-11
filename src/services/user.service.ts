@@ -2,16 +2,25 @@ import { db } from "../db/db";
 import { InsertUser, SelectUser, usersTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 export const createUser = async (user: InsertUser) => {
- const userExist = await db.select()
- .from(usersTable)
- .where(eq(usersTable.email,user.email))
- if(userExist) return {message:"User Already Exist"}
-const [insertedUser] = await db
-  .insert(usersTable)
-  .values({ name: user.name, age: user.age, email: user.email })
-  .returning();
+  // Check if a user with the provided email already exists
+  const userExist = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, user.email));
 
-return { message: `Thanks for registration, ${insertedUser.name}` };
+  // If a user exists with the same email, return a message
+  if (userExist.length > 0) {
+    return { message: "User Already Exists" };
+  }
+
+  // Insert the new user if no existing user is found
+  const [insertedUser] = await db
+    .insert(usersTable)
+    .values({ name: user.name, age: user.age, email: user.email })
+    .returning();
+
+  // Return a success message with the name of the inserted user
+  return { message: `Thanks for registration, ${insertedUser.name}` };
 };
 export const getUser = async()=>{
  const users = await db.select().from(usersTable);
