@@ -1,6 +1,12 @@
 import { db } from "../db/db";
 import { InsertUser, SelectUser, usersTable } from "../db/schema";
 import { eq } from "drizzle-orm";
+
+/**
+ * Creates a new user if one with the same email doesn't already exist.
+ * @param user - User data (name, age, email)
+ * @returns Success or existence message
+ */
 export const createUser = async (user: InsertUser) => {
   // Check if a user with the provided email already exists
   const userExist = await db
@@ -8,51 +14,71 @@ export const createUser = async (user: InsertUser) => {
     .from(usersTable)
     .where(eq(usersTable.email, user.email));
 
-  // If a user exists with the same email, return a message
   if (userExist.length > 0) {
     return { message: "User Already Exists" };
   }
 
-  // Insert the new user if no existing user is found
+  // Insert new user
   const [insertedUser] = await db
     .insert(usersTable)
-    .values({ name: user.name, age: user.age, email: user.email })
+    .values({
+      name: user.name,
+      age: user.age,
+      email: user.email,
+    })
     .returning();
 
-  // Return a success message with the name of the inserted user
   return { message: `Thanks for registration, ${insertedUser.name}` };
 };
-export const getUser = async()=>{
- const users = await db.select().from(usersTable);
-  return users;
-}
 
-export const getUserById = async(id:string)=>{
-  const userId = parseInt(id, 10); // Convert the string id to a number
+/**
+ * Retrieves all users from the database.
+ * @returns Array of user records
+ */
+export const getUser = async () => {
+  return await db.select().from(usersTable);
+};
+
+/**
+ * Retrieves a single user by ID.
+ * @param id - User ID as a string
+ * @returns User record or throws error for invalid ID
+ */
+export const getUserById = async (id: string) => {
+  const userId = parseInt(id, 10); // Convert string ID to number
   if (isNaN(userId)) {
     throw new Error("Invalid ID format");
   }
-return await db.select().from(usersTable).where(eq(usersTable.id, userId));
-}
 
+  return await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, userId));
+};
+
+/**
+ * Updates user data for a specific user ID.
+ * @param id - User ID as number
+ * @param data - Partial user data (excluding ID)
+ * @returns Update confirmation message
+ */
 export const updateUser = async (
-  id: number, // ID of the user to update
-  data: Partial<Omit<SelectUser, 'id'>>
+  id: number,
+  data: Partial<Omit<SelectUser, "id">>
 ) => {
-  // Check if data has at least one property to update
   if (Object.keys(data).length === 0) {
     throw new Error("No fields to update");
   }
 
-  // Perform the update query
-  await db
-    .update(usersTable)
-    .set(data) // Set the data you want to update
-    .where(eq(usersTable.id, id)); // Filter by user ID
+  await db.update(usersTable).set(data).where(eq(usersTable.id, id));
 
   return { message: `User with ID ${id} updated successfully` };
 };
 
-export const deleteUser = async(id:SelectUser["id"])=>{
- await db.delete(usersTable).where(eq(usersTable.id,id))
-}
+/**
+ * Deletes a user by ID.
+ * @param id - User ID
+ */
+export const deleteUser = async (id: SelectUser["id"]) => {
+  await db.delete(usersTable).where(eq(usersTable.id, id));
+};
