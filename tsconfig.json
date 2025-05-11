@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
+  },
+  "include": [
+    "src/**/*",                // Only include files inside src
+    "drizzle.config.ts"        // Include drizzle.config.ts from the root
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
