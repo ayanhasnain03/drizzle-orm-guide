@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { createPost } from "../services/post.service";
+import { createPost, getPostsByUserId } from "../services/post.service";
+
 
 export const createPostController = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -16,3 +17,16 @@ export const createPostController = async (req: Request, res: Response): Promise
     });
   }
 };
+export const getUserPostController = async (req:Request,res:Response):Promise<void>=>{
+ const {id} = req.params;
+   const userId = Number(id);
+ try {
+  const posts = await getPostsByUserId(userId)
+  res.status(200).json({
+   success:true,
+   posts:posts
+  })
+ } catch (error) {
+
+ }
+}
